@@ -6,3 +6,4 @@ networkx
 validators
 jsonschema
 flask_restful
+pycrypto

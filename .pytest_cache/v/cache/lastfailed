@@ -1,0 +1,4 @@
+{
+  "src/tngsdk/validation/tests/test_unit_validation.py::TngSdkValidationTest::test_instantiation": true, 
+  "src/tngsdk/validation/tests/test_unit_validation.py::TngSdkValidationTest::test_test": true
+}

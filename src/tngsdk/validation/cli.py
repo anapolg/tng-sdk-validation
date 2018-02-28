@@ -33,31 +33,39 @@ import argparse
 import os
 import sys
 
+from os.path import expanduser
 
 LOG = logging.getLogger(os.path.basename(__file__))
 
+DEFAULT_WORKSPACE_DIR = os.path.join(expanduser("~"), "tng-workspace")
 
 class CLI(object):
 
-    def __init__(self, args, packager):
+    def __init__(self, args, validator):
         self._args = args
         self._v = validator
 
     def dispatch(self):
-        if self._args.workspace:
+        # Validate package_file
+        if self._args.package_file:
+            result = self._v.validate_package(self._args.package_file)
+            # self._v.print_result(validator, result)
+
+        # Validate project
+        elif self._args.project_path:
+            result = self._v.validate_project(self._args.project_path)
+            # self._v.print_result(validator, result)
+
+        # Validate service
+        elif self._args.nsd:
+            # Check the existance of dpath and dext at some moment
             pass
 
-        else:
+        # Validate function
+        elif self._args.vnfd:
             pass
-    #     if self._args.package:
-    #         # package creation
-    #         self._p.package()
-    #     else:
-    #         # un-packaging
-    #         self._p.unpackage()
 
-
-def parse_args(input_args=None):
+def parse_args(args=None):
     parser = argparse.ArgumentParser(
         description="5GTANGO SDK validator",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -75,10 +83,10 @@ def parse_args(input_args=None):
 
     parser.add_argument(
         "-w", "--workspace",
-        help="Specify the directory of the SDK workspace for validating the SDK project.",
-        # help="Specify the directory of the SDK workspace for validating the "
-        #      "SDK project. If not specified will assume the directory: '{}'"
-        #      .format(Workspace.DEFAULT_WORKSPACE_DIR),
+        # help="Specify the directory of the SDK workspace for validating the SDK project.",
+        help="Specify the directory of the SDK workspace for validating the "
+             "SDK project. If not specified will assume the directory: '{}'"
+             .format(DEFAULT_WORKSPACE_DIR),
         dest="workspace_path",
         required=False,
         default=None
@@ -86,10 +94,10 @@ def parse_args(input_args=None):
 
     exclusive_parser.add_argument(
         "--project",
-        help="Validate the service of the specified SDK project.",
-        # help="Validate the service of the specified SDK project. If "
-        #      "not specified will assume the current directory: '{}'\n"
-        #      .format(os.getcwd()),
+        # help="Validate the service of the specified SDK project.",
+        help="Validate the service of the specified SDK project. If "
+             "not specified will assume the current directory: '{}'\n"
+             .format(os.getcwd()),
         dest="project_path",
         required=False,
         default=None
@@ -162,8 +170,22 @@ def parse_args(input_args=None):
         required=False,
         default=False
     )
+    parser.add_argument(
+        "--api",
+        help="Run packager in service mode with REST API.",
+        dest="api",
+        action="store_true",
+        required=False,
+        default=False
+    )
 
-    if input_args is None:
-        input_args = sys.argv[1:]
+    if args is None:
+       args = sys.argv[1:]
 
-    return parser.parse_args(input_args)
+    args = parser.parse_args(args)
+    
+    # By default, perform all validations
+    if not args.syntax and not args.integrity and not args.topology:
+        args.syntax = args.integrity = args.topology = True
+    
+    return args

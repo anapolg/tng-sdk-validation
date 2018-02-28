@@ -39,9 +39,25 @@ from tngsdk.validation.validator import Validator
 
 LOG = logging.getLogger(os.path.basename(__file__))
 
+
 def logging_setup():
     os.environ["COLOREDLOGS_LOG_FORMAT"] \
         = "%(asctime)s [%(levelname)s] [%(name)s] %(message)s"
+
+def validateFile(args): 
+    if not os.path.isfile(args.package_file):
+        LOG.error("Provided package is not a valid file")
+        exit(1)
+    return
+
+def setValidationType(v, args):
+    if args.integrity:
+        v._topology = False
+          
+    elif args.syntax:
+        v._integrity = False
+        v._topology = False
+    return v
 
 def main():
     logging_setup()
@@ -52,11 +68,39 @@ def main():
         coloredlogs.install(level="DEBUG")
     else:
         coloredlogs.install(level="INFO")
+
     # TODO validate if args combination makes any sense
+
+    # TODO validate params introduced
+
+    # Validate params for package_file validation
+    if args.package_file:
+        validateFile(args)
+        
+    # Validate params for project validation
+    elif args.project_path:
+        pass
+
+    # Validate params for service validation
+    elif args.nsd:
+        # Check the existance of dpath and dext at some moment
+        pass
+
+    # Validate params for function validation
+    elif args.vnfd:
+        pass
+
+    else:
+        LOG.error("Invalid arguments.")
+        exit(1)
+
     v = Validator()
-    
-    if args.service:
+
+    v = setValidationType(v, args)
+               
+    if args.api:
         # TODO start package in service mode
+        LOG.warning("Running rest api")
         pass
     else:
         # Run package in CLI mode
